@@ -1,32 +1,98 @@
-# [Rovo Dev Action]
+# Rovo Dev Action
 
-[![Atlassian license](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](LICENSE) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
+A GitHub Action to run [Rovo Dev CLI](https://support.atlassian.com/rovo/docs/install-and-run-rovo-dev-cli-on-your-device/) (Atlassian's developer AI agent) in your CI/CD workflows.
 
-A Github Action that invokes [Rovo Dev CLI](https://community.atlassian.com/forums/Rovo-for-Software-Teams-Beta/Introducing-Rovo-Dev-CLI-AI-Powered-Development-in-your-terminal/ba-p/3043623).
+## Features
+
+- 🤖 Run Rovo Dev CLI with custom prompts in GitHub Actions
+- 🔐 Secure authentication using Atlassian API tokens
+- 🔧 Cross-platform support (Linux, macOS, Windows)
+- ⚙️ Custom configuration support
+
+## Prerequisites
+
+1. An Atlassian account with access to Rovo Dev
+2. A Rovo Dev scoped API token (see [documentation](https://support.atlassian.com/rovo/docs/install-and-run-rovo-dev-cli-on-your-device/))
 
 ## Usage
 
-> Provide a simple and concise (code) example of your project. Consumers should understand **how** your project solves their problem.
+Example GitHub Actions Workflow:
 
-## Installation
+```yaml
+name: Update Documentation
 
-> Provide instructions on how to install and configure the project.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "README.md"
 
-## Documentation
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-> If your project is small and simple enough, documentation can be added here. For larger projects, provide a link to where the documentation lives.
+      - name: Run Rovo Dev
+        uses: atlassian-labs/rovo-dev-action@main
+        with:
+          prompt: "Read README.md and update the Confluence page at https://hello.atlassian.net/wiki/spaces/ROVODEV/pages/000000 to stay consistent"
+          atlassian_email: ${{ secrets.ATLASSIAN_EMAIL }}
+          atlassian_token: ${{ secrets.ATLASSIAN_TOKEN }}
+          config_file: .rovodev/ci-config.yml
+```
 
-## Tests
+Example `.rovodev/ci-config.yml`:
 
-> Describe and show how to run the tests with code examples.
+```yaml
+version: 1
+
+toolPermissions:
+  tools:
+    get_confluence_page: allow
+    create_confluence_page: allow
+    update_confluence_page: allow
+```
+
+## Inputs
+
+| Input               | Description                                         | Required | Default |
+| ------------------- | --------------------------------------------------- | -------- | ------- |
+| `prompt`            | The prompt/instructions to send to Rovo Dev CLI     | Yes      | -       |
+| `atlassian_email`   | Atlassian account email for authentication          | Yes      | -       |
+| `atlassian_token`   | Rovo Dev scoped API token for authentication        | Yes      | -       |
+| `working_directory` | Working directory for Rovo Dev CLI execution        | No       | `.`     |
+| `config_file`       | Path to a custom Rovo Dev configuration file (YAML) | No       | `""`    |
+
+## Outputs
+
+| Output      | Description                           |
+| ----------- | ------------------------------------- |
+| `exit_code` | Exit code from Rovo Dev CLI execution |
+
+## Authentication
+
+### Setting up Secrets
+
+Add the following secrets to your GitHub repository:
+
+- `ATLASSIAN_EMAIL`: Your Atlassian account email
+- `ATLASSIAN_TOKEN`: Your Rovo Dev scoped API token
+
+## Security
+
+- Never commit API tokens directly in your workflow files
+- Always use GitHub Secrets for sensitive credentials
 
 ## Contributions
 
-Contributions to [Rovo Dev Action] are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+Contributions to Rovo Dev Action are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## License
 
-Copyright (c) [2025] Atlassian US., Inc.
+Copyright (c) 2025 Atlassian US., Inc.
 Apache 2.0 licensed, see [LICENSE](LICENSE) file.
 
 <br/>
