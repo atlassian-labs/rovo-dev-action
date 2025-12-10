@@ -1,0 +1,129 @@
+name: "Rovo Dev Action"
+description: "Run Rovo Dev (Atlassian's developer AI agent) in GitHub Actions"
+branding:
+  icon: "cpu"
+  color: "green"
+
+inputs:
+  prompt:
+    description: "The prompt/instructions to send to Rovo Dev CLI"
+    required: true
+  atlassian_email:
+    description: "Atlassian account email for authentication"
+    required: true
+  atlassian_token:
+    description: "Rovo Dev scoped API token for authentication"
+    required: true
+  working_directory:
+    description: "Working directory for Rovo Dev CLI execution"
+    required: false
+    default: "."
+  config_file:
+    description: "Path to a custom Rovo Dev configuration file (YAML). If provided, this will be passed to the CLI via --config-file."
+    required: false
+    default: ""
+
+outputs:
+  exit_code:
+    description: "Exit code from Rovo Dev CLI execution"
+    value: ${{ steps.run-rovo-dev.outputs.exit_code }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Atlassian CLI
+      shell: bash
+      run: |
+        echo "Installing Atlassian CLI..."
+
+        # Detect OS and architecture
+        OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+        ARCH=$(uname -m)
+
+        # Map architecture names
+        case "$ARCH" in
+          x86_64)
+            ARCH="amd64"
+            ;;
+          aarch64|arm64)
+            ARCH="arm64"
+            ;;
+          *)
+            echo "::error::Unsupported architecture: $ARCH"
+            exit 1
+            ;;
+        esac
+
+        # Build download URL based on OS
+        case "$OS" in
+          darwin)
+            DOWNLOAD_URL="https://acli.atlassian.com/darwin/latest/acli_darwin_${ARCH}/acli"
+            BINARY_NAME="acli"
+            ;;
+          linux)
+            DOWNLOAD_URL="https://acli.atlassian.com/linux/latest/acli_linux_${ARCH}/acli"
+            BINARY_NAME="acli"
+            ;;
+          mingw*|msys*|cygwin*)
+            DOWNLOAD_URL="https://acli.atlassian.com/windows/latest/acli_windows_${ARCH}/acli.exe"
+            BINARY_NAME="acli.exe"
+            ;;
+          *)
+            echo "::error::Unsupported OS: $OS"
+            exit 1
+            ;;
+        esac
+
+        echo "Downloading from: $DOWNLOAD_URL"
+
+        # Download and install
+        curl -fsSL "$DOWNLOAD_URL" -o /usr/local/bin/$BINARY_NAME
+        chmod +x /usr/local/bin/$BINARY_NAME
+
+        echo "Atlassian CLI installed successfully"
+        acli --version
+
+    - name: Authenticate with Rovo Dev
+      shell: bash
+      env:
+        ATLASSIAN_EMAIL: ${{ inputs.atlassian_email }}
+        ATLASSIAN_TOKEN: ${{ inputs.atlassian_token }}
+      run: |
+        echo "Authenticating with Rovo Dev..."
+        echo "$ATLASSIAN_TOKEN" | acli rovodev auth login --email "$ATLASSIAN_EMAIL" --token
+        echo "Authentication successful"
+
+    - name: Run Rovo Dev CLI
+      id: run-rovo-dev
+      shell: bash
+      env:
+        PROMPT: ${{ inputs.prompt }}
+        WORKING_DIR: ${{ inputs.working_directory }}
+        CONFIG_FILE: ${{ inputs.config_file }}
+      run: |
+        echo "Running Rovo Dev CLI..."
+        cd "$WORKING_DIR"
+
+        # Build command with optional config file
+        CMD="acli rovodev run --yolo"
+        if [ -n "$CONFIG_FILE" ]; then
+          if [ ! -f "$CONFIG_FILE" ]; then
+            echo "::error::Config file not found: $CONFIG_FILE"
+            exit 1
+          fi
+          CMD="$CMD --config-file \"$CONFIG_FILE\""
+        fi
+
+        # Run Rovo Dev with the provided prompt
+        set +e
+        eval "$CMD \"$PROMPT\""
+        EXIT_CODE=$?
+        set -e
+
+        echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+        if [ $EXIT_CODE -ne 0 ]; then
+          echo "::warning::Rovo Dev CLI exited with code $EXIT_CODE"
+        fi
+
+        exit $EXIT_CODE
