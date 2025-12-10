@@ -1,6 +1,6 @@
 # Rovo Dev Action
 
-A GitHub Action to run [Rovo Dev CLI](https://support.atlassian.com/rovo/docs/install-and-run-rovo-dev-cli-on-your-device/) (Atlassian's developer AI agent) in your CI/CD workflows.
+A GitHub Action to run [Rovo Dev](https://www.atlassian.com/software/rovo-dev) (Atlassian's developer AI agent) in your CI/CD workflows.
 
 ## Features
 
@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Rovo Dev
-        uses: atlassian-labs/rovo-dev-action@main
+        uses: atlassian-labs/rovo-dev-action@v1
         with:
           prompt: "Read README.md and update the Confluence page at https://hello.atlassian.net/wiki/spaces/ROVODEV/pages/000000 to stay consistent"
           atlassian_email: ${{ secrets.ATLASSIAN_EMAIL }}

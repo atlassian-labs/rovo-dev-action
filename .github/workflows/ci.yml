@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-action:
+    name: Validate action.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate action.yml syntax
+        run: |
+          echo "Validating action.yml..."
+          yq eval '.' action.yml > /dev/null
+          echo "✓ action.yml is valid YAML"
+
+      - name: Check required action.yml fields
+        run: |
+          echo "Checking required fields..."
+          
+          # Check required top-level fields
+          for field in name description inputs runs; do
+            if [ "$(yq eval ".$field" action.yml)" = "null" ]; then
+              echo "✗ Missing required field: $field"
+              exit 1
+            fi
+          done
+          
+          # Check runs.using is composite
+          using=$(yq eval '.runs.using' action.yml)
+          if [ "$using" != "composite" ]; then
+            echo "✗ Expected 'runs.using' to be 'composite', got '$using'"
+            exit 1
+          fi
+          
+          echo "✓ All required fields present"
+          echo "  - name: $(yq eval '.name' action.yml)"
+          echo "  - description: $(yq eval '.description' action.yml | head -c 50)..."
+          echo "  - inputs: $(yq eval '.inputs | keys | join(", ")' action.yml)"
+          echo "  - runs.using: $using"

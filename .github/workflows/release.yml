@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: release-please-manifest.json
+
+      # Checkout is needed for updating the major version tag
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created }}
+
+      # For GitHub Actions, we need to maintain a floating major version tag (e.g., v1)
+      # so users can reference `uses: atlassian-labs/rovo-dev-action@v1`
+      - name: Update major version tag
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Delete existing major version tag locally and remotely (if exists)
+          git tag -d v${{ steps.release.outputs.major }} || true
+          git push origin :v${{ steps.release.outputs.major }} || true
+
+          # Create and push new major version tag pointing to this release
+          git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
+          git push origin v${{ steps.release.outputs.major }}
+
+          echo "✅ Updated v${{ steps.release.outputs.major }} tag to point to ${{ steps.release.outputs.tag_name }}"
