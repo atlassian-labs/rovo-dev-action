@@ -159,6 +159,7 @@ runs:
         PROMPT: ${{ inputs.prompt }}
         WORKING_DIR: ${{ inputs.working_directory }}
         CONFIG_FILE: ${{ inputs.config_file }}
+        ROVODEV_BETA: false
       run: |
         echo "Running Rovo Dev CLI..."
         cd "$WORKING_DIR"
