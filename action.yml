@@ -22,7 +22,7 @@ inputs:
     description: "Path to a custom Rovo Dev configuration file (YAML). If provided, this will be passed to the CLI via --config-file."
     required: false
     default: ""
-  # GitHub PR creation inputs
+  # PR creation inputs
   github_token:
     description: "GitHub token for PR creation and repository operations. Required if create_pr is true."
     required: false
