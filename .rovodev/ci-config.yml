@@ -1,0 +1,7 @@
+version: 1
+
+toolPermissions:
+  tools:
+    get_confluence_page: allow
+    create_confluence_page: allow
+    update_confluence_page: allow
