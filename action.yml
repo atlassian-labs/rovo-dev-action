@@ -22,11 +22,45 @@ inputs:
     description: "Path to a custom Rovo Dev configuration file (YAML). If provided, this will be passed to the CLI via --config-file."
     required: false
     default: ""
+  # GitHub PR creation inputs
+  github_token:
+    description: "GitHub token for PR creation and repository operations. Required if create_pr is true."
+    required: false
+    default: ""
+  create_pr:
+    description: "Whether to automatically create a PR with changes made by Rovo Dev"
+    required: false
+    default: "false"
+  pr_title:
+    description: "Title for the PR (used if create_pr is true)"
+    required: false
+    default: "Changes by Rovo Dev"
+  pr_body:
+    description: "Body/description for the PR (used if create_pr is true)"
+    required: false
+    default: "Automated changes by Rovo Dev"
+  pr_base_branch:
+    description: "Base branch for PR creation. Defaults to the current branch if not specified."
+    required: false
+    default: ""
+  branch_prefix:
+    description: "Prefix for auto-created branches"
+    required: false
+    default: "rovodev/"
 
 outputs:
   exit_code:
     description: "Exit code from Rovo Dev CLI execution"
     value: ${{ steps.run-rovo-dev.outputs.exit_code }}
+  pr_created:
+    description: "Whether a PR was created (true/false)"
+    value: ${{ steps.create-pr.outputs.pr_created }}
+  pr_url:
+    description: "URL of the created PR (if pr_created is true)"
+    value: ${{ steps.create-pr.outputs.pr_url }}
+  branch_name:
+    description: "Name of the branch created for the PR"
+    value: ${{ steps.branch-setup.outputs.branch_name }}
 
 runs:
   using: "composite"
@@ -93,6 +127,31 @@ runs:
         echo "$ATLASSIAN_TOKEN" | acli rovodev auth login --email "$ATLASSIAN_EMAIL" --token
         echo "Authentication successful"
 
+    - name: Setup Git Identity
+      if: ${{ inputs.create_pr == 'true' }}
+      shell: bash
+      run: |
+        git config --global user.name "Rovo Dev"
+        git config --global user.email "rovodev[bot]@users.noreply.github.com"
+
+    - name: Create Feature Branch
+      if: ${{ inputs.create_pr == 'true' }}
+      id: branch-setup
+      shell: bash
+      run: |
+        # Determine base branch: use input if provided, otherwise detect current branch
+        BASE_BRANCH="${{ inputs.pr_base_branch }}"
+        if [ -z "$BASE_BRANCH" ]; then
+          BASE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          echo "No base branch specified, using current branch: $BASE_BRANCH"
+        fi
+
+        "${{ github.action_path }}/scripts/branch-setup.sh" \
+          "run" \
+          "${{ github.run_number }}" \
+          "$BASE_BRANCH" \
+          "${{ inputs.branch_prefix }}"
+
     - name: Run Rovo Dev CLI
       id: run-rovo-dev
       shell: bash
@@ -127,3 +186,22 @@ runs:
         fi
 
         exit $EXIT_CODE
+
+    - name: Create Pull Request
+      if: ${{ inputs.create_pr == 'true' && steps.run-rovo-dev.outputs.exit_code == '0' }}
+      id: create-pr
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+      run: |
+        # Use the same base branch that was used for branch setup
+        BASE_BRANCH="${{ inputs.pr_base_branch }}"
+        if [ -z "$BASE_BRANCH" ]; then
+          BASE_BRANCH="${{ steps.branch-setup.outputs.base_branch }}"
+        fi
+
+        "${{ github.action_path }}/scripts/create-pr.sh" \
+          "${{ steps.branch-setup.outputs.branch_name }}" \
+          "$BASE_BRANCH" \
+          "${{ inputs.pr_title }}" \
+          "${{ inputs.pr_body }}"
