@@ -8,6 +8,7 @@ A GitHub Action to run [Rovo Dev](https://www.atlassian.com/software/rovo-dev) (
 - 🔐 Secure authentication using Atlassian API tokens
 - 🔧 Cross-platform support (Linux, macOS, Windows)
 - ⚙️ Custom configuration support
+- 🔀 Automatic PR creation with changes made by Rovo Dev
 
 ## Prerequisites
 
@@ -64,13 +65,22 @@ toolPermissions:
 | `atlassian_email`   | Atlassian account email for authentication          | Yes      | -       |
 | `atlassian_token`   | Rovo Dev scoped API token for authentication        | Yes      | -       |
 | `working_directory` | Working directory for Rovo Dev CLI execution        | No       | `.`     |
-| `config_file`       | Path to a custom Rovo Dev configuration file (YAML) | No       | `""`    |
+| `config_file`       | Path to a custom Rovo Dev configuration file (YAML). If provided, this will be passed to the CLI via --config-file. | No       | `""`    |
+| `github_token`      | GitHub token for PR creation and repository operations. Required if create_pr is true. | No       | `""`    |
+| `create_pr`         | Whether to automatically create a PR with changes made by Rovo Dev | No       | `false` |
+| `pr_title`          | Title for the PR (used if create_pr is true)       | No       | `Changes by Rovo Dev` |
+| `pr_body`           | Body/description for the PR (used if create_pr is true) | No       | `Automated changes by Rovo Dev` |
+| `pr_base_branch`    | Base branch for PR creation. Defaults to the current branch if not specified. | No       | `""`    |
+| `branch_prefix`     | Prefix for auto-created branches                    | No       | `rovodev/` |
 
 ## Outputs
 
-| Output      | Description                           |
-| ----------- | ------------------------------------- |
-| `exit_code` | Exit code from Rovo Dev CLI execution |
+| Output       | Description                           |
+| ------------ | ------------------------------------- |
+| `exit_code`  | Exit code from Rovo Dev CLI execution |
+| `pr_created` | Whether a PR was created (true/false) |
+| `pr_url`     | URL of the created PR (if pr_created is true) |
+| `branch_name` | Name of the branch created for the PR |
 
 ## Authentication
 
