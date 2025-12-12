@@ -14,13 +14,6 @@ if [ -z "$BRANCH_NAME" ] || [ -z "$BASE_BRANCH" ]; then
   exit 1
 fi
 
-# Check if there are any changes to commit
-if git diff --quiet && git diff --staged --quiet; then
-  echo "No changes detected. Skipping PR creation."
-  echo "pr_created=false" >> "$GITHUB_OUTPUT"
-  exit 0
-fi
-
 # Stage all changes
 git add -A
 
