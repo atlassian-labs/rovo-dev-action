@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/atlassian-labs/rovo-dev-action/compare/v1.0.0...v1.1.0) (2025-12-12)
+
+
+### Features
+
+* **action:** add GitHub PR creation capability ([08f3cc9](https://github.com/atlassian-labs/rovo-dev-action/commit/08f3cc9a9179a689ccff252fae44d9a6fab60c9b))
+
 ## 1.0.0 (2025-12-10)
 
 
