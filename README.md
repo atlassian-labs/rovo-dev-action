@@ -7,8 +7,9 @@ A GitHub Action to run [Rovo Dev](https://www.atlassian.com/software/rovo-dev) (
 - 🤖 Run Rovo Dev CLI with custom prompts in GitHub Actions
 - 🔐 Secure authentication using Atlassian API tokens
 - 🔧 Cross-platform support (Linux, macOS, Windows)
-- ⚙️ Custom configuration support
+- ⚙️ Custom configuration file support for advanced use cases
 - 🔀 Automatic PR creation with changes made by Rovo Dev
+- 🌿 Automatic branch detection and creation for PR workflows
 
 ## Prerequisites
 
