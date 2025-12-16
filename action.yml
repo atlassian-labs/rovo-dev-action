@@ -160,6 +160,7 @@ runs:
         WORKING_DIR: ${{ inputs.working_directory }}
         CONFIG_FILE: ${{ inputs.config_file }}
         ROVODEV_BETA: false
+        X_ROVODEV_INITIATOR: "rovo-dev-github-action"
       run: |
         echo "Running Rovo Dev CLI..."
         cd "$WORKING_DIR"
