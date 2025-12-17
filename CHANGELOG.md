@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/atlassian-labs/rovo-dev-action/compare/v1.1.0...v1.1.1) (2025-12-17)
+
+
+### Bug Fixes
+
+* **action:** handle prompts with special characters ([7668aec](https://github.com/atlassian-labs/rovo-dev-action/commit/7668aec712543cdb65dd25bde9daa00c08cc46d9))
+* **action:** handle prompts with special characters ([36690e2](https://github.com/atlassian-labs/rovo-dev-action/commit/36690e2ca11303fa85936357d99b362a9315ae55))
+
 ## [1.1.0](https://github.com/atlassian-labs/rovo-dev-action/compare/v1.0.0...v1.1.0) (2025-12-12)
 
 
