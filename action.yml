@@ -165,19 +165,19 @@ runs:
         echo "Running Rovo Dev CLI..."
         cd "$WORKING_DIR"
 
-        # Build command with optional config file
-        CMD="acli rovodev run --yolo"
+        # Build command with optional config file (use an array to avoid eval/quoting issues)
+        cmd=(acli rovodev run --yolo)
         if [ -n "$CONFIG_FILE" ]; then
           if [ ! -f "$CONFIG_FILE" ]; then
             echo "::error::Config file not found: $CONFIG_FILE"
             exit 1
           fi
-          CMD="$CMD --config-file \"$CONFIG_FILE\""
+          cmd+=(--config-file "$CONFIG_FILE")
         fi
 
         # Run Rovo Dev with the provided prompt
         set +e
-        eval "$CMD \"$PROMPT\""
+        "${cmd[@]}" "$PROMPT"
         EXIT_CODE=$?
         set -e
 
