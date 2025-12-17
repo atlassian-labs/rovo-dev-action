@@ -18,3 +18,29 @@ jobs:
           prompt: "Reply with exactly: Hello World"
           atlassian_email: ${{ secrets.ATLASSIAN_EMAIL }}
           atlassian_token: ${{ secrets.ATLASSIAN_TOKEN }}
+
+      - name: Run Rovo Dev with special characters in prompt
+        uses: ./
+        with:
+          # Includes shell-sensitive sequences that used to break when the action used `eval`
+          # to run the command, e.g. ``` fences, backticks, $(...) and quotes.
+          prompt: |
+            Reply with exactly: OK
+
+            Include these sequences verbatim in your response (do not execute them):
+
+            1) Triple backticks:
+            ```
+            echo "hello"
+            ```
+
+            2) Command substitution:
+            $(echo hi)
+
+            3) Backticks:
+            `echo hi`
+
+            4) Quotes:
+            "double" and 'single'
+          atlassian_email: ${{ secrets.ATLASSIAN_EMAIL }}
+          atlassian_token: ${{ secrets.ATLASSIAN_TOKEN }}
